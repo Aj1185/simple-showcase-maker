@@ -6,6 +6,7 @@ import { useRef } from 'react';
 import GlassCard from '@/components/GlassCard';
 import LightTrailCursor from '@/components/LightTrailCursor';
 import WorkGallery from '@/components/WorkGallery';
+import BookOfGlory from '@/components/BookOfGlory';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
@@ -388,6 +389,8 @@ const Index = () => {
       {/* Work Gallery */}
       <WorkGallery />
 
+      {/* Book of Glory */}
+      <BookOfGlory />
 
       {/* Contact Section */}
       <section id="contact" className="chapter-section min-h-screen py-32">
