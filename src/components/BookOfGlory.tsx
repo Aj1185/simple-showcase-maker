@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, useInView, AnimatePresence, PanInfo } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Trophy, Calendar, Users } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import { cn } from '@/lib/utils';
@@ -47,21 +47,43 @@ const hackathonData: HackathonAchievement[] = [
 const BookOfGlory = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isBookOpen, setIsBookOpen] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
+  // Auto-open book after initial animation
+  useEffect(() => {
+    if (isInView && !isBookOpen) {
+      const timer = setTimeout(() => setIsBookOpen(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isInView, isBookOpen]);
+
   const nextPage = () => {
-    if (currentPage < hackathonData.length - 1) {
+    if (currentPage < hackathonData.length - 1 && !isFlipping) {
+      setIsFlipping(true);
       setCurrentPage(currentPage + 1);
+      setTimeout(() => setIsFlipping(false), 600);
     }
   };
 
   const prevPage = () => {
-    if (currentPage > 0) {
+    if (currentPage > 0 && !isFlipping) {
+      setIsFlipping(true);
       setCurrentPage(currentPage - 1);
+      setTimeout(() => setIsFlipping(false), 600);
     }
   };
 
+  const handlePan = (event: any, info: PanInfo) => {
+    if (Math.abs(info.offset.x) > 100) {
+      if (info.offset.x > 0) {
+        prevPage(); // Swipe right = go to previous page
+      } else {
+        nextPage(); // Swipe left = go to next page
+      }
+    }
+  };
 
   return (
     <section ref={ref} className="min-h-screen py-32 relative overflow-hidden">
@@ -84,138 +106,177 @@ const BookOfGlory = () => {
 
         {/* Book Container */}
         <motion.div
-          initial={{ rotateY: 0, scale: 0.9, opacity: 0.8 }}
+          initial={{ rotateY: 15, scale: 0.9, opacity: 0.8 }}
           animate={isInView ? 
-            { rotateY: isBookOpen ? -25 : -15, scale: 1, opacity: 1 } : 
-            { rotateY: 0, scale: 0.9, opacity: 0.8 }
+            { rotateY: isBookOpen ? -15 : 15, scale: 1, opacity: 1 } : 
+            { rotateY: 15, scale: 0.9, opacity: 0.8 }
           }
           transition={{ duration: 1.2, ease: "easeOut" }}
-          onAnimationComplete={() => {
-            if (!isBookOpen && isInView) {
-              setIsBookOpen(true);
-            }
-          }}
-          className="relative max-w-5xl mx-auto perspective-1000"
+          className="relative max-w-5xl mx-auto"
           style={{ perspective: "1000px" }}
         >
-          {/* Book Cover/Spine */}
-          <div className="relative">
+          {/* Book Cover & Pages Container */}
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onPanEnd={handlePan}
+            className="relative cursor-grab active:cursor-grabbing"
+          >
             <GlassCard 
               glowColor="purple" 
               className="relative w-full h-[600px] md:h-[700px] overflow-hidden"
               intensity="high"
             >
-              {/* Book Binding Effect */}
-              <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-primary/20 to-transparent"></div>
-              <div className="absolute left-4 top-0 bottom-0 w-1 bg-primary/40"></div>
-              <div className="absolute left-8 top-0 bottom-0 w-1 bg-primary/30"></div>
+              {/* Book Spine */}
+              <motion.div 
+                className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-primary/20 to-transparent z-10"
+                initial={{ width: 0 }}
+                animate={isBookOpen ? { width: 64 } : {}}
+                transition={{ delay: 0.5, duration: 0.8 }}
+              />
+              <div className="absolute left-4 top-0 bottom-0 w-1 bg-primary/40 z-10"></div>
+              <div className="absolute left-8 top-0 bottom-0 w-1 bg-primary/30 z-10"></div>
               
-              {/* Book Content */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-                {/* Left Page - Hackathon Image */}
-                <motion.div 
-                  className="relative p-8 flex flex-col justify-center"
-                  key={`left-${currentPage}`}
+              {/* Book Pages */}
+              <div className="relative h-full">
+                {/* Right Cover Page (Book opening animation) */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20 border-r border-border/20 z-20"
+                  initial={{ rotateY: 0 }}
+                  animate={isBookOpen ? { rotateY: -180 } : {}}
+                  transition={{ duration: 1.5, ease: "easeInOut" }}
+                  style={{ 
+                    transformOrigin: "right center",
+                    transformStyle: "preserve-3d"
+                  }}
                 >
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`image-${currentPage}`}
-                      initial={{ x: 300, opacity: 0, rotateY: 90 }}
-                      animate={{ x: 0, opacity: 1, rotateY: 0 }}
-                      exit={{ x: -300, opacity: 0, rotateY: -90 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
-                      className="w-full h-full flex flex-col"
-                    >
-                      <div className="relative flex-1 rounded-lg overflow-hidden mb-6 shadow-2xl">
-                        <img 
-                          src={hackathonData[currentPage]?.image}
-                          alt={hackathonData[currentPage]?.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <h3 className="text-white font-orbitron font-bold text-lg mb-2">
-                            {hackathonData[currentPage]?.name}
-                          </h3>
-                          <div className="flex items-center gap-4 text-white/80 text-sm">
-                            <div className="flex items-center gap-1">
-                              <Trophy className="w-4 h-4" />
-                              <span className="font-rajdhani">{hackathonData[currentPage]?.role}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              <span className="font-rajdhani">{hackathonData[currentPage]?.date}</span>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <Trophy className="w-16 h-16 text-primary mx-auto mb-4" />
+                      <h3 className="text-2xl font-orbitron font-bold text-foreground">
+                        Book of Glory
+                      </h3>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Main Content Pages */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 h-full relative">
+                  {/* Right Page - Hackathon Image (First visible) */}
+                  <motion.div 
+                    className="relative p-8 flex flex-col justify-center order-2 lg:order-1"
+                    key={`right-${currentPage}`}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`image-${currentPage}`}
+                        initial={{ rotateY: 90, opacity: 0 }}
+                        animate={{ rotateY: 0, opacity: 1 }}
+                        exit={{ rotateY: -90, opacity: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="w-full h-full flex flex-col"
+                        style={{ 
+                          transformOrigin: "right center",
+                          transformStyle: "preserve-3d"
+                        }}
+                      >
+                        <div className="relative flex-1 rounded-lg overflow-hidden mb-6 shadow-2xl">
+                          <img 
+                            src={hackathonData[currentPage]?.image}
+                            alt={hackathonData[currentPage]?.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                          <div className="absolute bottom-4 left-4 right-4">
+                            <h3 className="text-white font-orbitron font-bold text-lg mb-2">
+                              {hackathonData[currentPage]?.name}
+                            </h3>
+                            <div className="flex items-center gap-4 text-white/80 text-sm">
+                              <div className="flex items-center gap-1">
+                                <Trophy className="w-4 h-4" />
+                                <span className="font-rajdhani">{hackathonData[currentPage]?.role}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                <span className="font-rajdhani">{hackathonData[currentPage]?.date}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
+                      </motion.div>
+                    </AnimatePresence>
+                  </motion.div>
 
-                {/* Right Page - Certificate & Details */}
-                <motion.div 
-                  className="relative p-8 border-l border-border/20 flex flex-col justify-center"
-                  key={`right-${currentPage}`}
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`cert-${currentPage}`}
-                      initial={{ x: 300, opacity: 0, rotateY: 90 }}
-                      animate={{ x: 0, opacity: 1, rotateY: 0 }}
-                      exit={{ x: -300, opacity: 0, rotateY: -90 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
-                      className="w-full h-full flex flex-col"
-                    >
-                      {/* Certificate Image */}
-                      <div className="relative flex-1 rounded-lg overflow-hidden mb-6 shadow-2xl border-2 border-primary/20">
-                        <img 
-                          src={hackathonData[currentPage]?.certificate}
-                          alt={`${hackathonData[currentPage]?.name} Certificate`}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
-                      </div>
+                  {/* Left Page - Certificate & Details (Flips from right) */}
+                  <motion.div 
+                    className="relative p-8 border-l border-border/20 flex flex-col justify-center order-1 lg:order-2"
+                    key={`left-${currentPage}`}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`cert-${currentPage}`}
+                        initial={{ rotateY: 90, opacity: 0 }}
+                        animate={{ rotateY: 0, opacity: 1 }}
+                        exit={{ rotateY: -90, opacity: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+                        className="w-full h-full flex flex-col"
+                        style={{ 
+                          transformOrigin: "left center",
+                          transformStyle: "preserve-3d"
+                        }}
+                      >
+                        {/* Certificate Image */}
+                        <div className="relative flex-1 rounded-lg overflow-hidden mb-6 shadow-2xl border-2 border-primary/20">
+                          <img 
+                            src={hackathonData[currentPage]?.certificate}
+                            alt={`${hackathonData[currentPage]?.name} Certificate`}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+                        </div>
 
-                      {/* Achievement Details */}
-                      <div className="space-y-4">
-                        <h4 className="text-xl font-orbitron font-bold text-slate-800 dark:text-white">
-                          Achievement Details
-                        </h4>
-                        <p className="text-gray-700 dark:text-muted-foreground font-rajdhani leading-relaxed">
-                          {hackathonData[currentPage]?.description}
-                        </p>
-                        
-                        {/* Achievement Stats */}
-                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/20">
-                          <div className="text-center">
-                            <div className="text-2xl font-orbitron font-bold text-primary mb-1">
-                              #{currentPage + 1}
+                        {/* Achievement Details */}
+                        <div className="space-y-4">
+                          <h4 className="text-xl font-orbitron font-bold text-foreground">
+                            Achievement Details
+                          </h4>
+                          <p className="text-muted-foreground font-rajdhani leading-relaxed">
+                            {hackathonData[currentPage]?.description}
+                          </p>
+                          
+                          {/* Achievement Stats */}
+                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/20">
+                            <div className="text-center">
+                              <div className="text-2xl font-orbitron font-bold text-primary mb-1">
+                                #{currentPage + 1}
+                              </div>
+                              <div className="text-sm font-rajdhani text-muted-foreground">
+                                Achievement
+                              </div>
                             </div>
-                            <div className="text-sm font-rajdhani text-gray-600 dark:text-muted-foreground">
-                              Achievement
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-orbitron font-bold text-accent mb-1">
-                              {2024 - currentPage}
-                            </div>
-                            <div className="text-sm font-rajdhani text-gray-600 dark:text-muted-foreground">
-                              Year
+                            <div className="text-center">
+                              <div className="text-2xl font-orbitron font-bold text-accent mb-1">
+                                {2024 - currentPage}
+                              </div>
+                              <div className="text-sm font-rajdhani text-muted-foreground">
+                                Year
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
+                      </motion.div>
+                    </AnimatePresence>
+                  </motion.div>
+                </div>
               </div>
 
               {/* Page Navigation */}
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4">
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-30">
                 <motion.button
                   onClick={prevPage}
-                  disabled={currentPage === 0}
+                  disabled={currentPage === 0 || isFlipping}
                   className={cn(
                     "p-3 rounded-full transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed",
                     "bg-primary/20 hover:bg-primary/40 text-primary border border-primary/30"
@@ -231,12 +292,18 @@ const BookOfGlory = () => {
                   {hackathonData.map((_, index) => (
                     <motion.button
                       key={index}
-                      onClick={() => setCurrentPage(index)}
+                      onClick={() => {
+                        if (!isFlipping && index !== currentPage) {
+                          setIsFlipping(true);
+                          setCurrentPage(index);
+                          setTimeout(() => setIsFlipping(false), 600);
+                        }
+                      }}
                       className={cn(
                         "w-3 h-3 rounded-full transition-all duration-300",
                         index === currentPage 
                           ? "bg-primary shadow-lg shadow-primary/40" 
-                          : "bg-gray-400 dark:bg-gray-600 hover:bg-primary/60"
+                          : "bg-muted-foreground/40 hover:bg-primary/60"
                       )}
                       whileHover={{ scale: 1.2 }}
                       whileTap={{ scale: 0.8 }}
@@ -246,7 +313,7 @@ const BookOfGlory = () => {
 
                 <motion.button
                   onClick={nextPage}
-                  disabled={currentPage === hackathonData.length - 1}
+                  disabled={currentPage === hackathonData.length - 1 || isFlipping}
                   className={cn(
                     "p-3 rounded-full transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed",
                     "bg-primary/20 hover:bg-primary/40 text-primary border border-primary/30"
@@ -259,22 +326,22 @@ const BookOfGlory = () => {
               </div>
 
               {/* Page Number */}
-              <div className="absolute top-6 right-6 text-sm font-rajdhani text-gray-600 dark:text-muted-foreground">
+              <div className="absolute top-6 right-6 text-sm font-rajdhani text-muted-foreground z-30">
                 Page {currentPage + 1} of {hackathonData.length}
               </div>
             </GlassCard>
-          </div>
+          </motion.div>
         </motion.div>
 
         {/* Mobile Swipe Instruction */}
         <motion.div 
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ delay: 2, duration: 0.8 }}
+          animate={isInView && isBookOpen ? { opacity: 1 } : {}}
+          transition={{ delay: 2.5, duration: 0.8 }}
           className="text-center mt-8 lg:hidden"
         >
-          <p className="text-sm font-rajdhani text-gray-600 dark:text-muted-foreground">
-            Swipe or use arrows to turn pages
+          <p className="text-sm font-rajdhani text-muted-foreground">
+            Swipe left/right or use arrows to turn pages
           </p>
         </motion.div>
       </div>
