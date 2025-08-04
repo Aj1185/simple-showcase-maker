@@ -7,6 +7,7 @@ import GlassCard from '@/components/GlassCard';
 import LightTrailCursor from '@/components/LightTrailCursor';
 import WorkGallery from '@/components/WorkGallery';
 import BookOfGlory from '@/components/BookOfGlory';
+import NeuralPathways from '@/components/NeuralPathways';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
@@ -309,82 +310,8 @@ const Index = () => {
         <div className="absolute top-3/4 left-1/2 w-64 h-64 bg-secondary/5 rounded-full blur-3xl animate-pulse delay-2000" />
       </section>
 
-      {/* Skills Section */}
-      <section id="skills" className="chapter-section min-h-screen py-32">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <motion.h2 
-              className={cn(
-                'text-5xl md:text-6xl font-space-grotesk font-bold mb-6',
-                theme === 'dark' ? 'neon-text' : 'text-indigo-900'
-              )}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              NEURAL PATHWAYS
-            </motion.h2>
-            <motion.p 
-              className="text-xl font-inter text-gray-700 dark:text-muted-foreground max-w-3xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              Expertise forged through countless hours in the digital realm, 
-              each skill a weapon in the arsenal of creation.
-            </motion.p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6">
-            {techSkills.map((skill, index) => {
-              const iconData = getSkillIcon(skill.icon);
-              return (
-                <motion.div
-                  key={skill.name}
-                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    delay: index * 0.1,
-                    ease: "easeOut"
-                  }}
-                  whileHover={{ 
-                    scale: 1.05, 
-                    rotateY: 10,
-                    transition: { duration: 0.3 }
-                  }}
-                  viewport={{ once: true }}
-                  className="group"
-                >
-                  <GlassCard 
-                    glowColor={skill.color} 
-                    className="p-6 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
-                    intensity="low"
-                  >
-                    <div className="w-12 h-12 mb-4 flex items-center justify-center">
-                      <div 
-                        className={cn(
-                          "w-10 h-10 transition-all duration-300 group-hover:scale-110",
-                          skill.color === 'purple' && "text-primary",
-                          skill.color === 'blue' && "text-secondary", 
-                          skill.color === 'cyan' && "text-cyan-500",
-                          skill.color === 'pink' && "text-accent"
-                        )}
-                        dangerouslySetInnerHTML={{ __html: iconData }}
-                      />
-                    </div>
-                    <h3 className="text-sm md:text-base font-space-grotesk font-semibold text-slate-800 dark:text-white group-hover:text-primary transition-colors duration-300">
-                      {skill.name}
-                    </h3>
-                  </GlassCard>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* Neural Pathways Skills Section */}
+      <NeuralPathways />
 
       {/* Work Gallery */}
       <WorkGallery />
