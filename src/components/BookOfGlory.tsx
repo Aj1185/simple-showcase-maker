@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, useInView, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Trophy, Calendar, Users } from 'lucide-react';
+import { useRef, useEffect } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Trophy, Calendar, Users } from 'lucide-react';
+import HTMLFlipBook from 'react-pageflip';
 import GlassCard from '@/components/GlassCard';
 import { cn } from '@/lib/utils';
 
@@ -45,45 +46,23 @@ const hackathonData: HackathonAchievement[] = [
 ];
 
 const BookOfGlory = () => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [isBookOpen, setIsBookOpen] = useState(false);
-  const [isFlipping, setIsFlipping] = useState(false);
   const ref = useRef(null);
+  const flipBookRef = useRef<any>(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
-  // Auto-open book after initial animation
+  // Auto-flip to first page after initial animation
   useEffect(() => {
-    if (isInView && !isBookOpen) {
-      const timer = setTimeout(() => setIsBookOpen(true), 800);
+    if (isInView && flipBookRef.current) {
+      const timer = setTimeout(() => {
+        try {
+          flipBookRef.current?.pageFlip()?.flipNext();
+        } catch (error) {
+          console.log('Auto-flip not available yet');
+        }
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isInView, isBookOpen]);
-
-  const nextPage = () => {
-    if (currentPage < hackathonData.length - 1 && !isFlipping) {
-      setIsFlipping(true);
-      setCurrentPage(currentPage + 1);
-      setTimeout(() => setIsFlipping(false), 600);
-    }
-  };
-
-  const prevPage = () => {
-    if (currentPage > 0 && !isFlipping) {
-      setIsFlipping(true);
-      setCurrentPage(currentPage - 1);
-      setTimeout(() => setIsFlipping(false), 600);
-    }
-  };
-
-  const handlePan = (event: any, info: PanInfo) => {
-    if (Math.abs(info.offset.x) > 100) {
-      if (info.offset.x > 0) {
-        prevPage(); // Swipe right = go to previous page
-      } else {
-        nextPage(); // Swipe left = go to next page
-      }
-    }
-  };
+  }, [isInView]);
 
   return (
     <section ref={ref} className="min-h-screen py-32 relative overflow-hidden">
@@ -104,244 +83,168 @@ const BookOfGlory = () => {
           </p>
         </motion.div>
 
-        {/* Book Container */}
+        {/* FlipBook Container with Animation */}
         <motion.div
-          initial={{ rotateY: 15, scale: 0.9, opacity: 0.8 }}
-          animate={isInView ? 
-            { rotateY: isBookOpen ? -15 : 15, scale: 1, opacity: 1 } : 
-            { rotateY: 15, scale: 0.9, opacity: 0.8 }
-          }
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative max-w-5xl mx-auto"
-          style={{ perspective: "1000px" }}
+          ref={ref}
+          initial={{ rotateY: -90, opacity: 0, scale: 0.8 }}
+          animate={isInView ? { rotateY: 0, opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex justify-center"
         >
-          {/* Book Cover & Pages Container */}
-          <motion.div
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            onPanEnd={handlePan}
-            className="relative cursor-grab active:cursor-grabbing"
+          <GlassCard 
+            glowColor="purple" 
+            className="p-8 relative"
+            intensity="high"
           >
-            <GlassCard 
-              glowColor="purple" 
-              className="relative w-full h-[600px] md:h-[700px] overflow-hidden"
-              intensity="high"
+            <HTMLFlipBook
+              ref={flipBookRef}
+              width={350}
+              height={500}
+              size="stretch"
+              minWidth={300}
+              maxWidth={400}
+              minHeight={400}
+              maxHeight={600}
+              maxShadowOpacity={0.5}
+              showCover={true}
+              mobileScrollSupport={false}
+              className="mx-auto"
+              usePortrait={true}
+              startPage={0}
+              startZIndex={1}
+              autoSize={false}
+              showPageCorners={true}
+              disableFlipByClick={false}
+              drawShadow={true}
+              flippingTime={800}
+              useMouseEvents={true}
+              swipeDistance={30}
+              clickEventForward={true}
+              style={{
+                filter: 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.25))',
+              }}
             >
-              {/* Book Spine */}
-              <motion.div 
-                className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-primary/20 to-transparent z-10"
-                initial={{ width: 0 }}
-                animate={isBookOpen ? { width: 64 } : {}}
-                transition={{ delay: 0.5, duration: 0.8 }}
-              />
-              <div className="absolute left-4 top-0 bottom-0 w-1 bg-primary/40 z-10"></div>
-              <div className="absolute left-8 top-0 bottom-0 w-1 bg-primary/30 z-10"></div>
-              
-              {/* Book Pages */}
-              <div className="relative h-full">
-                {/* Right Cover Page (Book opening animation) */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20 border-r border-border/20 z-20"
-                  initial={{ rotateY: 0 }}
-                  animate={isBookOpen ? { rotateY: -180 } : {}}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                  style={{ 
-                    transformOrigin: "right center",
-                    transformStyle: "preserve-3d"
-                  }}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Trophy className="w-16 h-16 text-primary mx-auto mb-4" />
-                      <h3 className="text-2xl font-orbitron font-bold text-foreground">
-                        Book of Glory
-                      </h3>
+              {/* Cover Page */}
+              <div className="w-full h-full bg-gradient-to-br from-background via-background to-muted/20 border border-border/20 rounded-r-lg flex items-center justify-center">
+                <div className="text-center p-8">
+                  <Trophy className="w-20 h-20 text-primary mx-auto mb-6" />
+                  <h3 className="text-3xl font-orbitron font-bold text-foreground mb-4">
+                    Book of Glory
+                  </h3>
+                  <p className="text-muted-foreground font-rajdhani">
+                    Digital Achievements & Victories
+                  </p>
+                  <div className="mt-8 text-sm font-rajdhani text-muted-foreground">
+                    Tap to open →
+                  </div>
+                </div>
+              </div>
+
+              {/* Achievement Pages - Each spread has image on right, details on left */}
+              {hackathonData.map((achievement, index) => [
+                // Right page: Hackathon image
+                <div key={`image-${achievement.id}`} className="w-full h-full bg-background border border-border/20 rounded-l-lg relative overflow-hidden">
+                  <div className="p-6 h-full flex flex-col justify-center">
+                    <div className="relative flex-1 rounded-lg overflow-hidden shadow-2xl">
+                      <img 
+                        src={achievement.image}
+                        alt={achievement.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <h3 className="text-white font-orbitron font-bold text-lg mb-2">
+                          {achievement.name}
+                        </h3>
+                        <div className="flex flex-col gap-2 text-white/80 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Trophy className="w-4 h-4" />
+                            <span className="font-rajdhani">{achievement.role}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            <span className="font-rajdhani">{achievement.date}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>,
 
-                {/* Main Content Pages */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 h-full relative">
-                  {/* Right Page - Hackathon Image (First visible) */}
-                  <motion.div 
-                    className="relative p-8 flex flex-col justify-center order-2 lg:order-1"
-                    key={`right-${currentPage}`}
-                  >
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={`image-${currentPage}`}
-                        initial={{ rotateY: 90, opacity: 0 }}
-                        animate={{ rotateY: 0, opacity: 1 }}
-                        exit={{ rotateY: -90, opacity: 0 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="w-full h-full flex flex-col"
-                        style={{ 
-                          transformOrigin: "right center",
-                          transformStyle: "preserve-3d"
-                        }}
-                      >
-                        <div className="relative flex-1 rounded-lg overflow-hidden mb-6 shadow-2xl">
-                          <img 
-                            src={hackathonData[currentPage]?.image}
-                            alt={hackathonData[currentPage]?.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                          <div className="absolute bottom-4 left-4 right-4">
-                            <h3 className="text-white font-orbitron font-bold text-lg mb-2">
-                              {hackathonData[currentPage]?.name}
-                            </h3>
-                            <div className="flex items-center gap-4 text-white/80 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Trophy className="w-4 h-4" />
-                                <span className="font-rajdhani">{hackathonData[currentPage]?.role}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span className="font-rajdhani">{hackathonData[currentPage]?.date}</span>
-                              </div>
-                            </div>
+                // Left page: Certificate & details
+                <div key={`cert-${achievement.id}`} className="w-full h-full bg-background border border-border/20 rounded-r-lg relative overflow-hidden">
+                  <div className="p-6 h-full flex flex-col">
+                    {/* Certificate Image */}
+                    <div className="relative h-1/2 rounded-lg overflow-hidden mb-4 shadow-lg border-2 border-primary/20">
+                      <img 
+                        src={achievement.certificate}
+                        alt={`${achievement.name} Certificate`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+                    </div>
+
+                    {/* Achievement Details */}
+                    <div className="flex-1 space-y-3">
+                      <h4 className="text-lg font-orbitron font-bold text-foreground">
+                        Achievement Details
+                      </h4>
+                      <p className="text-muted-foreground font-rajdhani text-sm leading-relaxed">
+                        {achievement.description}
+                      </p>
+                      
+                      {/* Achievement Stats */}
+                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border/20">
+                        <div className="text-center">
+                          <div className="text-xl font-orbitron font-bold text-primary mb-1">
+                            #{index + 1}
+                          </div>
+                          <div className="text-xs font-rajdhani text-muted-foreground">
+                            Achievement
                           </div>
                         </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  </motion.div>
-
-                  {/* Left Page - Certificate & Details (Flips from right) */}
-                  <motion.div 
-                    className="relative p-8 border-l border-border/20 flex flex-col justify-center order-1 lg:order-2"
-                    key={`left-${currentPage}`}
-                  >
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={`cert-${currentPage}`}
-                        initial={{ rotateY: 90, opacity: 0 }}
-                        animate={{ rotateY: 0, opacity: 1 }}
-                        exit={{ rotateY: -90, opacity: 0 }}
-                        transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-                        className="w-full h-full flex flex-col"
-                        style={{ 
-                          transformOrigin: "left center",
-                          transformStyle: "preserve-3d"
-                        }}
-                      >
-                        {/* Certificate Image */}
-                        <div className="relative flex-1 rounded-lg overflow-hidden mb-6 shadow-2xl border-2 border-primary/20">
-                          <img 
-                            src={hackathonData[currentPage]?.certificate}
-                            alt={`${hackathonData[currentPage]?.name} Certificate`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
-                        </div>
-
-                        {/* Achievement Details */}
-                        <div className="space-y-4">
-                          <h4 className="text-xl font-orbitron font-bold text-foreground">
-                            Achievement Details
-                          </h4>
-                          <p className="text-muted-foreground font-rajdhani leading-relaxed">
-                            {hackathonData[currentPage]?.description}
-                          </p>
-                          
-                          {/* Achievement Stats */}
-                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/20">
-                            <div className="text-center">
-                              <div className="text-2xl font-orbitron font-bold text-primary mb-1">
-                                #{currentPage + 1}
-                              </div>
-                              <div className="text-sm font-rajdhani text-muted-foreground">
-                                Achievement
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-2xl font-orbitron font-bold text-accent mb-1">
-                                {2024 - currentPage}
-                              </div>
-                              <div className="text-sm font-rajdhani text-muted-foreground">
-                                Year
-                              </div>
-                            </div>
+                        <div className="text-center">
+                          <div className="text-xl font-orbitron font-bold text-accent mb-1">
+                            {2024 - index}
+                          </div>
+                          <div className="text-xs font-rajdhani text-muted-foreground">
+                            Year
                           </div>
                         </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  </motion.div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ]).flat()}
+
+              {/* Back Cover */}
+              <div className="w-full h-full bg-gradient-to-br from-background via-background to-muted/20 border border-border/20 rounded-l-lg flex items-center justify-center">
+                <div className="text-center p-8">
+                  <Users className="w-16 h-16 text-accent mx-auto mb-4" />
+                  <h3 className="text-2xl font-orbitron font-bold text-foreground mb-4">
+                    The Journey Continues
+                  </h3>
+                  <p className="text-muted-foreground font-rajdhani text-sm">
+                    More achievements await in the digital frontier
+                  </p>
                 </div>
               </div>
-
-              {/* Page Navigation */}
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-30">
-                <motion.button
-                  onClick={prevPage}
-                  disabled={currentPage === 0 || isFlipping}
-                  className={cn(
-                    "p-3 rounded-full transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed",
-                    "bg-primary/20 hover:bg-primary/40 text-primary border border-primary/30"
-                  )}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </motion.button>
-
-                {/* Page Indicators */}
-                <div className="flex gap-2">
-                  {hackathonData.map((_, index) => (
-                    <motion.button
-                      key={index}
-                      onClick={() => {
-                        if (!isFlipping && index !== currentPage) {
-                          setIsFlipping(true);
-                          setCurrentPage(index);
-                          setTimeout(() => setIsFlipping(false), 600);
-                        }
-                      }}
-                      className={cn(
-                        "w-3 h-3 rounded-full transition-all duration-300",
-                        index === currentPage 
-                          ? "bg-primary shadow-lg shadow-primary/40" 
-                          : "bg-muted-foreground/40 hover:bg-primary/60"
-                      )}
-                      whileHover={{ scale: 1.2 }}
-                      whileTap={{ scale: 0.8 }}
-                    />
-                  ))}
-                </div>
-
-                <motion.button
-                  onClick={nextPage}
-                  disabled={currentPage === hackathonData.length - 1 || isFlipping}
-                  className={cn(
-                    "p-3 rounded-full transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed",
-                    "bg-primary/20 hover:bg-primary/40 text-primary border border-primary/30"
-                  )}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </motion.button>
-              </div>
-
-              {/* Page Number */}
-              <div className="absolute top-6 right-6 text-sm font-rajdhani text-muted-foreground z-30">
-                Page {currentPage + 1} of {hackathonData.length}
-              </div>
-            </GlassCard>
-          </motion.div>
+            </HTMLFlipBook>
+          </GlassCard>
         </motion.div>
 
-        {/* Mobile Swipe Instruction */}
+        {/* Instructions */}
         <motion.div 
           initial={{ opacity: 0 }}
-          animate={isInView && isBookOpen ? { opacity: 1 } : {}}
-          transition={{ delay: 2.5, duration: 0.8 }}
-          className="text-center mt-8 lg:hidden"
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: 2, duration: 0.8 }}
+          className="text-center mt-8"
         >
           <p className="text-sm font-rajdhani text-muted-foreground">
-            Swipe left/right or use arrows to turn pages
+            <span className="hidden md:inline">Click page corners or use arrow keys to flip pages</span>
+            <span className="md:hidden">Tap page corners or swipe to flip pages</span>
           </p>
         </motion.div>
       </div>
