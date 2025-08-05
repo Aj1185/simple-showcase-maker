@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import * as React from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
+
+const { useState, useEffect, useRef } = React;
 
 // Tech skill data with the requested 16 technologies
 const techSkills = [
