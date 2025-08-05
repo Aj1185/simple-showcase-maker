@@ -1,4 +1,4 @@
-import { Download, ArrowLeft, Award, Briefcase, GraduationCap, Code } from 'lucide-react';
+import { Download, ArrowLeft, Award, Briefcase, GraduationCap, Code, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import LightTrailCursor from '@/components/LightTrailCursor';
@@ -6,15 +6,50 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useEffect, useState, useRef } from 'react';
 
 const Resume = () => {
   const { theme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
 
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = '/resume.pdf';
     link.download = 'Atharva_Jangale_Resume.pdf';
     link.click();
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const experience = [
@@ -79,13 +114,81 @@ const Resume = () => {
                 className="flex items-center space-x-2 text-slate-700 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
-                <span className="font-rajdhani font-medium">Back to Portfolio</span>
+                <span className="hidden md:inline font-rajdhani font-medium">Back to Portfolio</span>
+                <span className="md:hidden font-rajdhani font-medium">Portfolio</span>
               </Link>
-              <ThemeToggle variant="icon" size="md" />
+              
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex">
+                <ThemeToggle variant="icon" size="md" />
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                className="md:hidden p-2 text-foreground/80 hover:text-primary transition-colors"
+                onClick={toggleMobileMenu}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
+                aria-label="Toggle mobile menu"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </GlassCard>
         </div>
       </nav>
+
+      {/* Mobile Menu Panel */}
+      <aside
+        id="mobile-menu"
+        ref={mobileMenuRef}
+        className={cn(
+          'fixed top-0 right-0 h-full w-80 max-w-[90vw] bg-background/95 backdrop-blur-md border-l border-border/20 z-50 transform transition-transform duration-300 ease-out',
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        )}
+        aria-hidden={!mobileMenuOpen}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-8">
+            <div className="text-xl font-orbitron font-bold neon-text">
+              Menu
+            </div>
+            <button
+              onClick={toggleMobileMenu}
+              className="p-2 text-foreground/80 hover:text-primary transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <Link 
+              to="/"
+              className="block w-full text-left text-lg font-rajdhani font-medium text-foreground/80 hover:text-primary transition-colors duration-300 py-2 flex items-center space-x-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to Portfolio</span>
+            </Link>
+            
+            <div className="pt-4 border-t border-border/20">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-rajdhani text-foreground/60">Theme</span>
+                <ThemeToggle variant="icon" size="md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Hero Section */}
       <section className="pt-32 pb-16">

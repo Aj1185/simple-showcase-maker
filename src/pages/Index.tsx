@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
-import { ChevronDown, Github, Linkedin, Mail, ExternalLink, Code2, Palette, Zap, Instagram, MessageCircle, FileText, ArrowRight } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { ChevronDown, Github, Linkedin, Mail, ExternalLink, Code2, Palette, Zap, Instagram, MessageCircle, FileText, ArrowRight, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
 import GlassCard from '@/components/GlassCard';
 import LightTrailCursor from '@/components/LightTrailCursor';
 import WorkGallery from '@/components/WorkGallery';
@@ -39,6 +38,8 @@ const Index = () => {
   const { theme } = useTheme();
   const [scrollY, setScrollY] = useState(0);
   const [currentSection, setCurrentSection] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,6 +60,46 @@ const Index = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setMobileMenuOpen(false);
+    }
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
 
   const techSkills = [
     { name: 'Figma', icon: 'siFigma', color: 'purple' as const },
@@ -112,42 +153,114 @@ const Index = () => {
               <div className="text-2xl font-orbitron font-bold neon-text">
                 ./portfolio
               </div>
-              <div className="flex items-center space-x-6">
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-6">
                 <div className="flex space-x-6">
                   {['About', 'Skills', 'Projects', 'Certificates', 'Contact'].map((item, index) => (
                     <button
                       key={item}
                       className={cn(
                         'text-sm font-rajdhani font-medium transition-colors duration-300',
-                        'text-slate-700 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white',
                         currentSection === index 
-                          ? 'text-primary dark:neon-text' 
-                          : ''
+                          ? 'text-primary glow-text' 
+                          : 'text-foreground/80 hover:text-primary'
                       )}
-                      onClick={() => {
-                        const elementId = item.toLowerCase() === 'projects' ? 'digital-artifacts' : 
-                                         item.toLowerCase() === 'certificates' ? 'digital-credentials' : 
-                                         item.toLowerCase();
-                        const element = document.getElementById(elementId);
-                        element?.scrollIntoView({ behavior: 'smooth' });
-                      }}
+                      onClick={() => scrollToSection(item.toLowerCase())}
                     >
                       {item}
                     </button>
                   ))}
-                  <Link 
-                    to="/resume"
-                    className="text-sm font-rajdhani font-medium transition-colors duration-300 text-slate-700 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white"
-                  >
-                    Resume
-                  </Link>
                 </div>
+                <Link 
+                  to="/resume"
+                  className="text-sm font-rajdhani font-medium text-foreground/80 hover:text-primary transition-colors duration-300 flex items-center space-x-1"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Resume</span>
+                </Link>
                 <ThemeToggle variant="icon" size="md" />
               </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                className="md:hidden p-2 text-foreground/80 hover:text-primary transition-colors"
+                onClick={toggleMobileMenu}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
+                aria-label="Toggle mobile menu"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </GlassCard>
         </div>
       </nav>
+
+      {/* Mobile Menu Panel */}
+      <aside
+        id="mobile-menu"
+        ref={mobileMenuRef}
+        className={cn(
+          'fixed top-0 right-0 h-full w-80 max-w-[90vw] bg-background/95 backdrop-blur-md border-l border-border/20 z-50 transform transition-transform duration-300 ease-out',
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        )}
+        aria-hidden={!mobileMenuOpen}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-8">
+            <div className="text-xl font-orbitron font-bold neon-text">
+              Menu
+            </div>
+            <button
+              onClick={toggleMobileMenu}
+              className="p-2 text-foreground/80 hover:text-primary transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {['About', 'Skills', 'Projects', 'Certificates', 'Contact'].map((item, index) => (
+              <button
+                key={item}
+                className={cn(
+                  'block w-full text-left text-lg font-rajdhani font-medium transition-colors duration-300 py-2',
+                  currentSection === index 
+                    ? 'text-primary glow-text' 
+                    : 'text-foreground/80 hover:text-primary'
+                )}
+                onClick={() => scrollToSection(item.toLowerCase())}
+              >
+                {item}
+              </button>
+            ))}
+            <Link 
+              to="/resume"
+              className="block w-full text-left text-lg font-rajdhani font-medium text-foreground/80 hover:text-primary transition-colors duration-300 py-2 flex items-center space-x-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <FileText className="w-5 h-5" />
+              <span>Resume</span>
+            </Link>
+            
+            <div className="pt-4 border-t border-border/20">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-rajdhani text-foreground/60">Theme</span>
+                <ThemeToggle variant="icon" size="md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Hero Section */}
       <section 
