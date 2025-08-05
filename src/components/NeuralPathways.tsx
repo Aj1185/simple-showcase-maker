@@ -1,209 +1,147 @@
-import * as React from 'react';
-import { motion, useAnimation } from 'framer-motion';
+import React, { useCallback } from 'react';
+import { motion } from 'framer-motion';
+import Particles from 'react-tsparticles';
+import { loadFull } from 'tsparticles';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 
-const { useState, useEffect, useRef } = React;
-
 // Tech skill data with the requested 16 technologies
 const techSkills = [
-  { name: 'Figma', icon: '🎨', color: 'purple', size: 'lg' },
-  { name: 'HTML', icon: '🌐', color: 'blue', size: 'md' },
-  { name: 'Google Cloud', icon: '☁️', color: 'cyan', size: 'lg' },
-  { name: 'Next.js', icon: '⚡', color: 'pink', size: 'xl' },
-  { name: 'TypeScript', icon: '📘', color: 'blue', size: 'lg' },
-  { name: 'Git', icon: '🔀', color: 'purple', size: 'md' },
-  { name: 'GitHub', icon: '🐙', color: 'cyan', size: 'lg' },
-  { name: 'Node.js', icon: '🟢', color: 'pink', size: 'md' },
-  { name: 'Canva', icon: '🎯', color: 'purple', size: 'sm' },
-  { name: 'Firebase', icon: '🔥', color: 'blue', size: 'lg' },
-  { name: 'SQL', icon: '🗃️', color: 'cyan', size: 'md' },
-  { name: 'C++', icon: '⚙️', color: 'pink', size: 'lg' },
-  { name: 'MS Office', icon: '📊', color: 'blue', size: 'sm' },
-  { name: 'Vercel', icon: '▲', color: 'purple', size: 'md' },
-  { name: 'React', icon: '⚛️', color: 'cyan', size: 'xl' },
-  { name: 'Supabase', icon: '💾', color: 'pink', size: 'lg' }
+  { name: 'Figma', icon: '🎨', color: 'purple' },
+  { name: 'HTML', icon: '🌐', color: 'blue' },
+  { name: 'Google Cloud', icon: '☁️', color: 'cyan' },
+  { name: 'Next.js', icon: '⚡', color: 'pink' },
+  { name: 'TypeScript', icon: '📘', color: 'blue' },
+  { name: 'Git', icon: '🔀', color: 'purple' },
+  { name: 'GitHub', icon: '🐙', color: 'cyan' },
+  { name: 'Node.js', icon: '🟢', color: 'pink' },
+  { name: 'Canva', icon: '🎯', color: 'purple' },
+  { name: 'Firebase', icon: '🔥', color: 'blue' },
+  { name: 'SQL', icon: '🗃️', color: 'cyan' },
+  { name: 'C++', icon: '⚙️', color: 'pink' },
+  { name: 'MS Office', icon: '📊', color: 'blue' },
+  { name: 'Vercel', icon: '▲', color: 'purple' },
+  { name: 'React', icon: '⚛️', color: 'cyan' },
+  { name: 'Supabase', icon: '💾', color: 'pink' }
 ];
-
-interface BubbleProps {
-  bubble: typeof techSkills[0];
-  index: number;
-  mousePosition: { x: number; y: number };
-  containerRef: React.RefObject<HTMLDivElement>;
-}
-
-const TechBubble: React.FC<BubbleProps> = ({ bubble, index, mousePosition, containerRef }) => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  const bubbleRef = useRef<HTMLDivElement>(null);
-  const controls = useAnimation();
-
-  // Initialize random position
-  useEffect(() => {
-    const randomX = Math.random() * 80 + 10; // 10% to 90%
-    const randomY = Math.random() * 80 + 10; // 10% to 90%
-    setPosition({ x: randomX, y: randomY });
-  }, []);
-
-  // Repulsion effect - bubbles move away from cursor
-  useEffect(() => {
-    if (!containerRef.current || !bubbleRef.current) return;
-
-    const container = containerRef.current;
-    const bubble = bubbleRef.current;
-    const containerRect = container.getBoundingClientRect();
-    const bubbleRect = bubble.getBoundingClientRect();
-
-    // Calculate bubble center relative to container
-    const bubbleCenterX = bubbleRect.left + bubbleRect.width / 2 - containerRect.left;
-    const bubbleCenterY = bubbleRect.top + bubbleRect.height / 2 - containerRect.top;
-
-    // Calculate distance from mouse to bubble center
-    const deltaX = mousePosition.x - bubbleCenterX;
-    const deltaY = mousePosition.y - bubbleCenterY;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    // Repulsion settings - adjust to tweak interaction
-    const repulsionRadius = 120; // How close mouse needs to be to trigger repulsion
-    const repulsionStrength = 0.5; // How strong the repulsion effect is
-
-    if (distance < repulsionRadius && distance > 0) {
-      // Calculate repulsion force (stronger when closer)
-      const force = (repulsionRadius - distance) / repulsionRadius;
-      // Direction away from mouse
-      const repelX = -(deltaX / distance) * force * repulsionStrength * 50;
-      const repelY = -(deltaY / distance) * force * repulsionStrength * 50;
-
-      controls.start({
-        x: repelX,
-        y: repelY,
-        transition: { type: 'spring', stiffness: 300, damping: 30 }
-      });
-    } else {
-      // Return to original position when mouse is far away
-      controls.start({
-        x: 0,
-        y: 0,
-        transition: { type: 'spring', stiffness: 200, damping: 25 }
-      });
-    }
-  }, [mousePosition, controls, containerRef]);
-
-  const sizeClasses = {
-    sm: 'w-14 h-14 text-xl',
-    md: 'w-16 h-16 text-2xl',
-    lg: 'w-20 h-20 text-3xl',
-    xl: 'w-24 h-24 text-4xl'
-  };
-
-  const colorClasses = {
-    purple: 'bg-primary/20 border-primary/30 hover:bg-primary/30 hover:shadow-primary/50',
-    blue: 'bg-secondary/20 border-secondary/30 hover:bg-secondary/30 hover:shadow-secondary/50',
-    cyan: 'bg-cyan-500/20 border-cyan-500/30 hover:bg-cyan-500/30 hover:shadow-cyan-500/50',
-    pink: 'bg-accent/20 border-accent/30 hover:bg-accent/30 hover:shadow-accent/50'
-  };
-
-  return (
-    <motion.div
-      ref={bubbleRef}
-      className="absolute"
-      style={{
-        left: `${position.x}%`,
-        top: `${position.y}%`,
-        transform: 'translate(-50%, -50%)'
-      }}
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{ 
-        opacity: 1, 
-        scale: 1,
-        ...controls 
-      }}
-      transition={{ 
-        delay: index * 0.1,
-        type: 'spring',
-        stiffness: 200,
-        damping: 20
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={() => {
-        // Mobile tap repulsion effect
-        controls.start({
-          scale: [1, 1.2, 1],
-          transition: { duration: 0.3 }
-        });
-      }}
-    >
-      <motion.div
-        className={cn(
-          'rounded-full border-2 backdrop-blur-sm flex items-center justify-center cursor-pointer transition-all duration-300',
-          'group hover:scale-110',
-          sizeClasses[bubble.size],
-          colorClasses[bubble.color]
-        )}
-        animate={{
-          scale: isHovered ? 1.15 : 1,
-          boxShadow: isHovered 
-            ? '0 0 30px rgba(var(--primary), 0.6), 0 0 60px rgba(var(--primary), 0.3)'
-            : '0 0 15px rgba(var(--primary), 0.2)'
-        }}
-        whileHover={{
-          y: -5,
-          transition: { type: 'spring', stiffness: 400 }
-        }}
-      >
-        <span className="filter drop-shadow-lg">{bubble.icon}</span>
-        
-        {/* Tooltip */}
-        <motion.div
-          className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-lg border border-border/50 shadow-lg"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ 
-            opacity: isHovered ? 1 : 0,
-            y: isHovered ? 0 : 10
-          }}
-          transition={{ duration: 0.2 }}
-          style={{ pointerEvents: 'none' }}
-        >
-          <span className="text-sm font-rajdhani font-medium text-foreground whitespace-nowrap">
-            {bubble.name}
-          </span>
-        </motion.div>
-      </motion.div>
-
-      {/* Floating animation */}
-      <motion.div
-        className="absolute inset-0 rounded-full"
-        animate={{
-          y: [0, -8, 0],
-          rotate: [0, 3, -3, 0]
-        }}
-        transition={{
-          duration: 4 + Math.random() * 2,
-          repeat: Infinity,
-          ease: 'easeInOut',
-          delay: Math.random() * 2
-        }}
-        style={{ pointerEvents: 'none' }}
-      />
-    </motion.div>
-  );
-};
 
 const NeuralPathways: React.FC = () => {
   const { theme } = useTheme();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Track mouse position within container for repulsion effect
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
+  const particlesInit = useCallback(async (engine: any) => {
+    await loadFull(engine);
+  }, []);
+
+  const particlesOptions = {
+    fpsLimit: 60,
+    particles: {
+      number: { 
+        value: 16,
+        density: {
+          enable: true,
+          area: 800
+        }
+      },
+      shape: {
+        type: "circle" as const
+      },
+      color: {
+        value: ["#8b5cf6", "#06b6d4", "#ec4899", "#3b82f6"]
+      },
+      opacity: {
+        value: 0.8,
+        random: {
+          enable: true,
+          minimumValue: 0.6
+        }
+      },
+      size: { 
+        value: 60,
+        random: { 
+          enable: true, 
+          minimumValue: 45 
+        }
+      },
+      stroke: {
+        width: 2,
+        color: {
+          value: ["#8b5cf6", "#06b6d4", "#ec4899", "#3b82f6"]
+        }
+      },
+      move: { 
+        enable: true, 
+        speed: 0.8,
+        direction: "none" as const,
+        random: true,
+        straight: false,
+        outModes: {
+          default: "bounce" as const
+        },
+        attract: {
+          enable: false,
+          rotateX: 600,
+          rotateY: 1200
+        }
+      },
+      life: {
+        duration: {
+          sync: false,
+          value: 3
+        },
+        count: 0,
+        delay: {
+          random: {
+            enable: true,
+            minimumValue: 0.5
+          },
+          value: 1
+        }
+      }
+    },
+    interactivity: {
+      detectsOn: "canvas" as const,
+      events: {
+        onHover: { 
+          enable: true, 
+          mode: "repulse" as const
+        },
+        onClick: { 
+          enable: true, 
+          mode: "repulse" as const
+        },
+        resize: true
+      },
+      modes: {
+        repulse: {
+          distance: 120,
+          duration: 0.4,
+          factor: 100,
+          speed: 1,
+          maxSpeed: 50,
+          easing: "ease-out-quad" as const
+        },
+        grab: {
+          distance: 400,
+          links: {
+            opacity: 1
+          }
+        }
+      }
+    },
+    detectRetina: true,
+    responsive: [
+      {
+        maxWidth: 767,
+        options: {
+          particles: { 
+            number: { value: 0 } 
+          }
+        }
+      }
+    ],
+    background: {
+      color: "transparent"
+    }
   };
 
   return (
@@ -250,69 +188,127 @@ const NeuralPathways: React.FC = () => {
           </motion.p>
         </div>
 
-        {/* Floating Bubbles Container with Cursor Repulsion */}
+        {/* Desktop: React TSParticles Bubble Field */}
         <motion.div
-          ref={containerRef}
-          className="relative h-[600px] md:h-[700px] w-full cursor-crosshair"
-          onMouseMove={handleMouseMove}
+          className="hidden md:block relative"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
         >
-          {techSkills.map((bubble, index) => (
-            <TechBubble
-              key={bubble.name}
-              bubble={bubble}
-              index={index}
-              mousePosition={mousePosition}
-              containerRef={containerRef}
-            />
-          ))}
+          <Particles
+            id="neural-pathways"
+            init={particlesInit}
+            options={particlesOptions}
+            className="relative h-[600px] md:h-[700px] w-full cursor-crosshair"
+            style={{
+              background: 'transparent'
+            }}
+          />
+          
+          {/* Skill labels overlay - positioned absolutely to match particles */}
+          <div className="absolute inset-0 pointer-events-none">
+            {techSkills.map((skill, index) => (
+              <motion.div
+                key={skill.name}
+                className="absolute flex flex-col items-center justify-center"
+                style={{
+                  left: `${Math.random() * 80 + 10}%`,
+                  top: `${Math.random() * 80 + 10}%`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+              >
+                <div className="text-4xl mb-2 filter drop-shadow-lg">
+                  {skill.icon}
+                </div>
+                <div className="bg-background/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-rajdhani font-medium text-foreground border border-border/50">
+                  {skill.name}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Mobile Grid Fallback - Hidden on larger screens */}
-        <div className="block md:hidden mt-16">
-          <div className="grid grid-cols-3 gap-6">
-            {techSkills.map((bubble, index) => {
+        {/* Mobile: Grid Fallback */}
+        <div className="block md:hidden">
+          <div className="grid grid-cols-2 gap-6">
+            {techSkills.map((skill, index) => {
               const mobileColorClasses = {
-                purple: 'bg-primary/20 border-primary/30',
-                blue: 'bg-secondary/20 border-secondary/30',
-                cyan: 'bg-cyan-500/20 border-cyan-500/30',
-                pink: 'bg-accent/20 border-accent/30'
+                purple: 'bg-primary/20 border-primary/30 hover:bg-primary/30 hover:shadow-lg hover:shadow-primary/25',
+                blue: 'bg-secondary/20 border-secondary/30 hover:bg-secondary/30 hover:shadow-lg hover:shadow-secondary/25',
+                cyan: 'bg-cyan-500/20 border-cyan-500/30 hover:bg-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/25',
+                pink: 'bg-accent/20 border-accent/30 hover:bg-accent/30 hover:shadow-lg hover:shadow-accent/25'
               };
               
               return (
                 <motion.div
-                  key={`mobile-${bubble.name}`}
+                  key={`mobile-${skill.name}`}
                   className={cn(
-                    'rounded-full border-2 backdrop-blur-sm flex flex-col items-center justify-center p-4 aspect-square',
-                    mobileColorClasses[bubble.color]
+                    'rounded-2xl border-2 backdrop-blur-sm flex flex-col items-center justify-center p-6 transition-all duration-300',
+                    mobileColorClasses[skill.color]
                   )}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   viewport={{ once: true }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ 
+                    scale: 0.95,
+                    transition: { duration: 0.1 }
+                  }}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -5,
+                    transition: { duration: 0.2 }
+                  }}
                 >
-                  <span className="text-2xl mb-1">{bubble.icon}</span>
-                  <span className="text-xs font-rajdhani font-medium text-center">
-                    {bubble.name}
+                  <span className="text-3xl mb-3 filter drop-shadow-lg">{skill.icon}</span>
+                  <span className="text-sm font-rajdhani font-medium text-center leading-tight">
+                    {skill.name}
                   </span>
                 </motion.div>
               );
             })}
           </div>
+          
+          {/* Mobile Instructions */}
+          <motion.div 
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <p className="text-sm font-rajdhani text-muted-foreground">
+              Tap each skill to see interaction
+            </p>
+          </motion.div>
         </div>
+
+        {/* Desktop Instructions */}
+        <motion.div 
+          className="hidden md:block text-center mt-8"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          viewport={{ once: true }}
+        >
+          <p className="text-sm font-rajdhani text-muted-foreground">
+            Move your cursor to see the neural network respond • Click to create ripples
+          </p>
+        </motion.div>
       </div>
 
       {/* 
-        CONFIGURATION NOTES:
-        - To add new skills: Add entries to techSkills array
-        - To adjust repulsion distance: Modify repulsionRadius in TechBubble component
-        - To change repulsion strength: Adjust repulsionStrength value
-        - Bubble sizes: Change sizeClasses values
-        - Movement speed: Modify floating animation duration
+        CONFIGURATION NOTES for react-tsparticles:
+        - To add new skills: Add entries to techSkills array and increase particles.number.value
+        - To adjust repulsion distance: Modify interactivity.modes.repulse.distance
+        - To change repulsion strength: Adjust interactivity.modes.repulse.factor
+        - Bubble sizes: Change particles.size.value and minimumValue
+        - Movement speed: Modify particles.move.speed
+        - Colors: Update particles.color.value array with CSS custom property values
       */}
     </section>
   );
