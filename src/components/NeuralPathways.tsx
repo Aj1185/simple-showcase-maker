@@ -3,8 +3,8 @@ import { motion, useAnimation } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 
-// Tech skill data with the requested technologies
-const techBubbles = [
+// Tech skill data with the requested 16 technologies
+const techSkills = [
   { name: 'Figma', icon: '🎨', color: 'purple', size: 'lg' },
   { name: 'HTML', icon: '🌐', color: 'blue', size: 'md' },
   { name: 'Google Cloud', icon: '☁️', color: 'cyan', size: 'lg' },
@@ -24,7 +24,7 @@ const techBubbles = [
 ];
 
 interface BubbleProps {
-  bubble: typeof techBubbles[0];
+  bubble: typeof techSkills[0];
   index: number;
   mousePosition: { x: number; y: number };
   containerRef: React.RefObject<HTMLDivElement>;
@@ -43,7 +43,7 @@ const TechBubble: React.FC<BubbleProps> = ({ bubble, index, mousePosition, conta
     setPosition({ x: randomX, y: randomY });
   }, []);
 
-  // Magnetic effect based on cursor position
+  // Repulsion effect - bubbles move away from cursor
   useEffect(() => {
     if (!containerRef.current || !bubbleRef.current) return;
 
@@ -61,21 +61,24 @@ const TechBubble: React.FC<BubbleProps> = ({ bubble, index, mousePosition, conta
     const deltaY = mousePosition.y - bubbleCenterY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // Magnetic effect radius
-    const magnetRadius = 150;
-    const magnetStrength = 0.3;
+    // Repulsion settings - adjust to tweak interaction
+    const repulsionRadius = 120; // How close mouse needs to be to trigger repulsion
+    const repulsionStrength = 0.5; // How strong the repulsion effect is
 
-    if (distance < magnetRadius) {
-      const force = (magnetRadius - distance) / magnetRadius;
-      const offsetX = deltaX * force * magnetStrength;
-      const offsetY = deltaY * force * magnetStrength;
+    if (distance < repulsionRadius && distance > 0) {
+      // Calculate repulsion force (stronger when closer)
+      const force = (repulsionRadius - distance) / repulsionRadius;
+      // Direction away from mouse
+      const repelX = -(deltaX / distance) * force * repulsionStrength * 50;
+      const repelY = -(deltaY / distance) * force * repulsionStrength * 50;
 
       controls.start({
-        x: offsetX,
-        y: offsetY,
+        x: repelX,
+        y: repelY,
         transition: { type: 'spring', stiffness: 300, damping: 30 }
       });
     } else {
+      // Return to original position when mouse is far away
       controls.start({
         x: 0,
         y: 0,
@@ -85,10 +88,10 @@ const TechBubble: React.FC<BubbleProps> = ({ bubble, index, mousePosition, conta
   }, [mousePosition, controls, containerRef]);
 
   const sizeClasses = {
-    sm: 'w-16 h-16 text-2xl',
-    md: 'w-20 h-20 text-3xl',
-    lg: 'w-24 h-24 text-4xl',
-    xl: 'w-28 h-28 text-5xl'
+    sm: 'w-14 h-14 text-xl',
+    md: 'w-16 h-16 text-2xl',
+    lg: 'w-20 h-20 text-3xl',
+    xl: 'w-24 h-24 text-4xl'
   };
 
   const colorClasses = {
@@ -121,6 +124,13 @@ const TechBubble: React.FC<BubbleProps> = ({ bubble, index, mousePosition, conta
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => {
+        // Mobile tap repulsion effect
+        controls.start({
+          scale: [1, 1.2, 1],
+          transition: { duration: 0.3 }
+        });
+      }}
     >
       <motion.div
         className={cn(
@@ -163,8 +173,8 @@ const TechBubble: React.FC<BubbleProps> = ({ bubble, index, mousePosition, conta
       <motion.div
         className="absolute inset-0 rounded-full"
         animate={{
-          y: [0, -10, 0],
-          rotate: [0, 5, -5, 0]
+          y: [0, -8, 0],
+          rotate: [0, 3, -3, 0]
         }}
         transition={{
           duration: 4 + Math.random() * 2,
@@ -183,7 +193,7 @@ const NeuralPathways: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Track mouse position within container
+  // Track mouse position within container for repulsion effect
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     
@@ -234,21 +244,21 @@ const NeuralPathways: React.FC = () => {
             viewport={{ once: true }}
           >
             Interactive molecules of expertise, each skill floating in the digital cosmos, 
-            ready to react and combine for extraordinary creations.
+            ready to repel from your cursor like charged particles in this neural network.
           </motion.p>
         </div>
 
-        {/* Floating Bubbles Container */}
+        {/* Floating Bubbles Container with Cursor Repulsion */}
         <motion.div
           ref={containerRef}
-          className="relative h-[600px] md:h-[700px] w-full"
+          className="relative h-[600px] md:h-[700px] w-full cursor-crosshair"
           onMouseMove={handleMouseMove}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
         >
-          {techBubbles.map((bubble, index) => (
+          {techSkills.map((bubble, index) => (
             <TechBubble
               key={bubble.name}
               bubble={bubble}
@@ -262,7 +272,7 @@ const NeuralPathways: React.FC = () => {
         {/* Mobile Grid Fallback - Hidden on larger screens */}
         <div className="block md:hidden mt-16">
           <div className="grid grid-cols-3 gap-6">
-            {techBubbles.map((bubble, index) => {
+            {techSkills.map((bubble, index) => {
               const mobileColorClasses = {
                 purple: 'bg-primary/20 border-primary/30',
                 blue: 'bg-secondary/20 border-secondary/30',
@@ -293,6 +303,15 @@ const NeuralPathways: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 
+        CONFIGURATION NOTES:
+        - To add new skills: Add entries to techSkills array
+        - To adjust repulsion distance: Modify repulsionRadius in TechBubble component
+        - To change repulsion strength: Adjust repulsionStrength value
+        - Bubble sizes: Change sizeClasses values
+        - Movement speed: Modify floating animation duration
+      */}
     </section>
   );
 };
