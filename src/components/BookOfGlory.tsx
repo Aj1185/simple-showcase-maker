@@ -3,7 +3,6 @@ import { motion, useInView } from 'framer-motion';
 import { Trophy, Calendar, Users } from 'lucide-react';
 import HTMLFlipBook from 'react-pageflip';
 import GlassCard from '@/components/GlassCard';
-import { cn } from '@/lib/utils';
 
 interface HackathonAchievement {
   id: number;
@@ -98,17 +97,17 @@ const BookOfGlory = () => {
           >
             <HTMLFlipBook
               ref={flipBookRef}
-              width={350}
-              height={500}
+              showCover={true}
+              width={800}
+              height={600}
               size="stretch"
-              minWidth={300}
-              maxWidth={400}
+              minWidth={320}
+              maxWidth={800}
               minHeight={400}
               maxHeight={600}
               maxShadowOpacity={0.5}
-              showCover={true}
               mobileScrollSupport={false}
-              className="mx-auto"
+              className="w-full h-[600px] md:h-[700px] mx-auto"
               usePortrait={true}
               startPage={0}
               startZIndex={1}
@@ -125,7 +124,7 @@ const BookOfGlory = () => {
               }}
             >
               {/* Cover Page */}
-              <div className="w-full h-full bg-gradient-to-br from-background via-background to-muted/20 border border-border/20 rounded-r-lg flex items-center justify-center">
+              <div className="page w-full h-full bg-gradient-to-br from-background via-background to-muted/20 border border-border/20 rounded-r-lg flex items-center justify-center">
                 <div className="text-center p-8">
                   <Trophy className="w-20 h-20 text-primary mx-auto mb-6" />
                   <h3 className="text-3xl font-orbitron font-bold text-foreground mb-4">
@@ -143,7 +142,7 @@ const BookOfGlory = () => {
               {/* Achievement Pages - Each spread has image on right, details on left */}
               {hackathonData.map((achievement, index) => [
                 // Right page: Hackathon image
-                <div key={`image-${achievement.id}`} className="w-full h-full bg-background border border-border/20 rounded-l-lg relative overflow-hidden">
+                <div key={`image-${achievement.id}`} className="page w-full h-full bg-background border border-border/20 rounded-l-lg relative overflow-hidden">
                   <div className="p-6 h-full flex flex-col justify-center">
                     <div className="relative flex-1 rounded-lg overflow-hidden shadow-2xl">
                       <img 
@@ -173,7 +172,7 @@ const BookOfGlory = () => {
                 </div>,
 
                 // Left page: Certificate & details
-                <div key={`cert-${achievement.id}`} className="w-full h-full bg-background border border-border/20 rounded-r-lg relative overflow-hidden">
+                <div key={`cert-${achievement.id}`} className="page w-full h-full bg-background border border-border/20 rounded-r-lg relative overflow-hidden">
                   <div className="p-6 h-full flex flex-col">
                     {/* Certificate Image */}
                     <div className="relative h-1/2 rounded-lg overflow-hidden mb-4 shadow-lg border-2 border-primary/20">
@@ -220,7 +219,7 @@ const BookOfGlory = () => {
               ]).flat()}
 
               {/* Back Cover */}
-              <div className="w-full h-full bg-gradient-to-br from-background via-background to-muted/20 border border-border/20 rounded-l-lg flex items-center justify-center">
+              <div className="page w-full h-full bg-gradient-to-br from-background via-background to-muted/20 border border-border/20 rounded-l-lg flex items-center justify-center">
                 <div className="text-center p-8">
                   <Users className="w-16 h-16 text-accent mx-auto mb-4" />
                   <h3 className="text-2xl font-orbitron font-bold text-foreground mb-4">

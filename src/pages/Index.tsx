@@ -391,7 +391,9 @@ const Index = () => {
       <WorkGallery />
 
       {/* Book of Glory */}
-      <BookOfGlory />
+      <section id="certificates" className="chapter-section">
+        <BookOfGlory />
+      </section>
 
       {/* Contact Section */}
       <section id="contact" className="chapter-section min-h-screen py-32">
