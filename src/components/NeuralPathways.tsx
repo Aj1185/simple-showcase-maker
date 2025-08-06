@@ -5,25 +5,6 @@ import { loadFull } from 'tsparticles';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 
-// Tech skill data with the requested 16 technologies
-const techSkills = [
-  { name: 'Figma', icon: '🎨', color: 'purple' },
-  { name: 'HTML', icon: '🌐', color: 'blue' },
-  { name: 'Google Cloud', icon: '☁️', color: 'cyan' },
-  { name: 'Next.js', icon: '⚡', color: 'pink' },
-  { name: 'TypeScript', icon: '📘', color: 'blue' },
-  { name: 'Git', icon: '🔀', color: 'purple' },
-  { name: 'GitHub', icon: '🐙', color: 'cyan' },
-  { name: 'Node.js', icon: '🟢', color: 'pink' },
-  { name: 'Canva', icon: '🎯', color: 'purple' },
-  { name: 'Firebase', icon: '🔥', color: 'blue' },
-  { name: 'SQL', icon: '🗃️', color: 'cyan' },
-  { name: 'C++', icon: '⚙️', color: 'pink' },
-  { name: 'MS Office', icon: '📊', color: 'blue' },
-  { name: 'Vercel', icon: '▲', color: 'purple' },
-  { name: 'React', icon: '⚛️', color: 'cyan' },
-  { name: 'Supabase', icon: '💾', color: 'pink' }
-];
 
 const NeuralPathways: React.FC = () => {
   const { theme } = useTheme();
@@ -43,16 +24,31 @@ const NeuralPathways: React.FC = () => {
         }
       },
       shape: {
-        type: "circle" as const
-      },
-      color: {
-        value: ["#8b5cf6", "#06b6d4", "#ec4899", "#3b82f6"]
+        type: "image" as const,
+        image: [
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/figma.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/html5.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/googlecloud.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/nextdotjs.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/typescript.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/git.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/github.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/nodedotjs.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/canva.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/firebase.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/mysql.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/cplusplus.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/microsoftoffice.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/vercel.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/react.svg", width: 60, height: 60 },
+          { src: "https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/supabase.svg", width: 60, height: 60 }
+        ]
       },
       opacity: {
-        value: 0.8,
+        value: 0.9,
         random: {
           enable: true,
-          minimumValue: 0.6
+          minimumValue: 0.7
         }
       },
       size: { 
@@ -60,12 +56,6 @@ const NeuralPathways: React.FC = () => {
         random: { 
           enable: true, 
           minimumValue: 45 
-        }
-      },
-      stroke: {
-        width: 2,
-        color: {
-          value: ["#8b5cf6", "#06b6d4", "#ec4899", "#3b82f6"]
         }
       },
       move: { 
@@ -81,20 +71,6 @@ const NeuralPathways: React.FC = () => {
           enable: false,
           rotateX: 600,
           rotateY: 1200
-        }
-      },
-      life: {
-        duration: {
-          sync: false,
-          value: 3
-        },
-        count: 0,
-        delay: {
-          random: {
-            enable: true,
-            minimumValue: 0.5
-          },
-          value: 1
         }
       }
     },
@@ -134,7 +110,7 @@ const NeuralPathways: React.FC = () => {
         maxWidth: 767,
         options: {
           particles: { 
-            number: { value: 0 } 
+            number: { value: 8 } 
           }
         }
       }
@@ -188,9 +164,9 @@ const NeuralPathways: React.FC = () => {
           </motion.p>
         </div>
 
-        {/* Desktop: React TSParticles Bubble Field */}
+        {/* Unified Logo Bubble Field */}
         <motion.div
-          className="hidden md:block relative"
+          className="relative"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 1 }}
@@ -200,103 +176,24 @@ const NeuralPathways: React.FC = () => {
             id="neural-pathways"
             init={particlesInit}
             options={particlesOptions}
-            className="relative h-[600px] md:h-[700px] w-full cursor-crosshair"
+            className="relative h-[500px] md:h-[700px] w-full cursor-crosshair"
             style={{
               background: 'transparent'
             }}
           />
-          
-          {/* Skill labels overlay - positioned absolutely to match particles */}
-          <div className="absolute inset-0 pointer-events-none">
-            {techSkills.map((skill, index) => (
-              <motion.div
-                key={skill.name}
-                className="absolute flex flex-col items-center justify-center"
-                style={{
-                  left: `${Math.random() * 80 + 10}%`,
-                  top: `${Math.random() * 80 + 10}%`,
-                  transform: 'translate(-50%, -50%)'
-                }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-              >
-                <div className="text-4xl mb-2 filter drop-shadow-lg">
-                  {skill.icon}
-                </div>
-                <div className="bg-background/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-rajdhani font-medium text-foreground border border-border/50">
-                  {skill.name}
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </motion.div>
 
-        {/* Mobile: Grid Fallback */}
-        <div className="block md:hidden">
-          <div className="grid grid-cols-2 gap-6">
-            {techSkills.map((skill, index) => {
-              const mobileColorClasses = {
-                purple: 'bg-primary/20 border-primary/30 hover:bg-primary/30 hover:shadow-lg hover:shadow-primary/25',
-                blue: 'bg-secondary/20 border-secondary/30 hover:bg-secondary/30 hover:shadow-lg hover:shadow-secondary/25',
-                cyan: 'bg-cyan-500/20 border-cyan-500/30 hover:bg-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/25',
-                pink: 'bg-accent/20 border-accent/30 hover:bg-accent/30 hover:shadow-lg hover:shadow-accent/25'
-              };
-              
-              return (
-                <motion.div
-                  key={`mobile-${skill.name}`}
-                  className={cn(
-                    'rounded-2xl border-2 backdrop-blur-sm flex flex-col items-center justify-center p-6 transition-all duration-300',
-                    mobileColorClasses[skill.color]
-                  )}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  viewport={{ once: true }}
-                  whileTap={{ 
-                    scale: 0.95,
-                    transition: { duration: 0.1 }
-                  }}
-                  whileHover={{
-                    scale: 1.05,
-                    y: -5,
-                    transition: { duration: 0.2 }
-                  }}
-                >
-                  <span className="text-3xl mb-3 filter drop-shadow-lg">{skill.icon}</span>
-                  <span className="text-sm font-rajdhani font-medium text-center leading-tight">
-                    {skill.name}
-                  </span>
-                </motion.div>
-              );
-            })}
-          </div>
-          
-          {/* Mobile Instructions */}
-          <motion.div 
-            className="text-center mt-8"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-sm font-rajdhani text-muted-foreground">
-              Tap each skill to see interaction
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Desktop Instructions */}
+        {/* Instructions */}
         <motion.div 
-          className="hidden md:block text-center mt-8"
+          className="text-center mt-8"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
           viewport={{ once: true }}
         >
           <p className="text-sm font-rajdhani text-muted-foreground">
-            Move your cursor to see the neural network respond • Click to create ripples
+            <span className="hidden md:inline">Move your cursor to see the neural network respond • Click to create ripples</span>
+            <span className="md:hidden">Tap the floating logos to see them repel</span>
           </p>
         </motion.div>
       </div>
